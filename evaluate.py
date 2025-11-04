@@ -189,22 +189,114 @@ def run_eval(question: str, ground_truth: str, top_k: int = TOP_K):
     # print(f"additional_value = {judge6['additional_value']:.3f}")
     # print(f"error_penalty    = {judge6['error_penalty']:.3f}")
 
-    from llm_as_a_judge import run_llm_as_a_judge
+    # ===============================================================
 
-    judge = run_llm_as_a_judge(
-        question,
-        answer,
-        contexts_texts,
-        ground_truth,
-        key_claims=facts,  # 예: ['SVM','DNN','Autoencoder','DT-CNN']
+    # from llm_as_a_judge import run_llm_as_a_judge
+
+    # judge = run_llm_as_a_judge(
+    #     question,
+    #     answer,
+    #     contexts_texts,
+    #     ground_truth,
+    #     key_claims=facts,  # 예: ['SVM','DNN','Autoencoder','DT-CNN']
+    #     weight_additional_value=0.15,
+    #     penalty_softness=0.2,
+    # )
+
+    # print("\n=== LLM-as-a-Judge (6 metrics + final) ===")
+    # for k, v in judge["scores"].items():
+    #     print(f"{k:16} = {v:.3f}")
+    # print(judge["details"])
+
+    # ===============================================================
+
+    # from llm_as_a_judge import run_llm_as_a_judge
+    # from llm_as_a_judge_explain import explain_all
+
+    # # ... (question, answer, contexts_texts, ground_truth, facts 등 준비)
+    # judge = run_llm_as_a_judge(
+    #     question, answer, contexts_texts, ground_truth, key_claims=facts
+    # )
+
+    # print("\n=== LLM-as-a-Judge (scores) ===")
+    # for k, v in judge["scores"].items():
+    #     print(f"{k:16} = {v:.3f}")
+
+    # # 설명 출력
+    # exp = explain_all(judge["details"], question, answer, ground_truth, contexts_texts)
+
+    # from pprint import pprint
+
+    # print("\n=== LLM-as-a-Judge EXPLANATIONS (why each score?) ===")
+    # pprint(exp["explanations"]["completeness"])  # 필요 항목만 펼쳐서 보기
+    # pprint(exp["explanations"]["usefulness"])
+    # pprint(exp["explanations"]["clarity"])
+    # pprint(exp["explanations"]["relevance"])
+    # pprint(exp["explanations"]["additional_value"])
+    # pprint(exp["explanations"]["error_penalty"])
+
+    # ===============================================================
+
+    from explain import explain_bundle
+
+    from datetime import datetime
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    save_json = f"./reports/judge_explain_{ts}.json"
+
+    bundle = explain_bundle(
+        question=question,
+        answer=answer,
+        contexts=contexts_texts,  # rag retrieve 상위 k개 청크(문장 전체 전달 추천)
+        ground_truth=ground_truth,
+        key_claims=facts,  # 우리가 추출한 핵심 주장 리스트(없으면 None)
         weight_additional_value=0.15,
-        penalty_softness=0.2,
+        penalty_softness=0.20,
+        save_path=save_json,
     )
 
+    # ---- 요약 점수 출력 ----
     print("\n=== LLM-as-a-Judge (6 metrics + final) ===")
-    for k, v in judge["scores"].items():
+    for k, v in bundle["scores"].items():
         print(f"{k:16} = {v:.3f}")
-    print(judge["details"])
+
+    # ---- 세부 근거: details 일부(원하면 전체 pprint) ----
+    from pprint import pprint
+
+    print("\n--- details.completeness ---")
+    pprint(bundle["details"]["completeness"])
+    print("\n--- details.clarity ---")
+    pprint(bundle["details"]["clarity"])
+    print("\n--- details.additional_value ---")
+    pprint(bundle["details"]["additional_value"])
+    print("\n--- details.error_penalty ---")
+    pprint(bundle["details"]["error_penalty"])
+
+    # ---- 왜 이런 점수가 나왔는지 설명(각 metric 한 장씩) ----
+    exps = bundle["explanations"]
+    print("\n=== EXPLANATIONS (why each score?) ===")
+    for m in [
+        "completeness",
+        "usefulness",
+        "clarity",
+        "relevance",
+        "additional_value",
+        "error_penalty",
+    ]:
+        exp = exps.get(m, {})
+        print(f"\n[{m}] summary: {exp.get('summary','')}")
+        print(f"[{m}] score  : {exp.get('score', None)}")
+        # 주요 drivers 2~3개만 요약
+        drivers = exp.get("drivers", [])[:3]
+        for d in drivers:
+            typ = d.get("type", "")
+            reason = d.get("reason", "")
+            evs = d.get("evidence", [])[:1]
+            ev_ref = evs[0].get("ref", "") if evs else ""
+            ev_quote = evs[0].get("quote", "") if evs else ""
+            print(f'  - {typ}: {reason} | {ev_ref} :: "{ev_quote}"')
+
+    print(f"\n[ saved JSON ] {save_json}")
 
 
 if __name__ == "__main__":

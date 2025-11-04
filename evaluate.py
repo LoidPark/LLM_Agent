@@ -177,18 +177,34 @@ def run_eval(question: str, ground_truth: str, top_k: int = TOP_K):
         print(f" - {cl} -> {_supported(cl)}")
     # ===============================================================
 
-    from llm_as_a_judge import run_llm_as_a_judge  # 파일명: llm-as-a-judge.py
+    # from llm_as_a_judge import run_llm_as_a_judge
 
-    # ... (results → contexts_texts, answer 이미 구함)
-    judge6 = run_llm_as_a_judge(question, answer, contexts_texts, ground_truth)
+    # judge6 = run_llm_as_a_judge(question, answer, contexts_texts, ground_truth)
 
-    print("\n=== LLM-as-a-Judge (6 metrics) ===")
-    print(f"completeness     = {judge6['completeness']:.3f}")
-    print(f"usefulness       = {judge6['usefulness']:.3f}")
-    print(f"clarity          = {judge6['clarity']:.3f}")
-    print(f"relevance        = {judge6['relevance']:.3f}")
-    print(f"additional_value = {judge6['additional_value']:.3f}")
-    print(f"error_penalty    = {judge6['error_penalty']:.3f}")
+    # print("\n=== LLM-as-a-Judge (6 metrics) ===")
+    # print(f"completeness     = {judge6['completeness']:.3f}")
+    # print(f"usefulness       = {judge6['usefulness']:.3f}")
+    # print(f"clarity          = {judge6['clarity']:.3f}")
+    # print(f"relevance        = {judge6['relevance']:.3f}")
+    # print(f"additional_value = {judge6['additional_value']:.3f}")
+    # print(f"error_penalty    = {judge6['error_penalty']:.3f}")
+
+    from llm_as_a_judge import run_llm_as_a_judge
+
+    judge = run_llm_as_a_judge(
+        question,
+        answer,
+        contexts_texts,
+        ground_truth,
+        key_claims=facts,  # 예: ['SVM','DNN','Autoencoder','DT-CNN']
+        weight_additional_value=0.15,
+        penalty_softness=0.2,
+    )
+
+    print("\n=== LLM-as-a-Judge (6 metrics + final) ===")
+    for k, v in judge["scores"].items():
+        print(f"{k:16} = {v:.3f}")
+    print(judge["details"])
 
 
 if __name__ == "__main__":

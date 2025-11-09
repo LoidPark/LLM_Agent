@@ -1,8 +1,4 @@
 # llm.py
-from dotenv import load_dotenv
-
-load_dotenv()
-
 import os
 from openai import OpenAI
 from config import OPENAI_API_KEY, OPENAI_MODEL

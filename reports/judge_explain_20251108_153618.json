@@ -1,0 +1,250 @@
+{
+  "scores": {
+    "completeness": 1.0,
+    "usefulness": 0.75,
+    "clarity": 0.75,
+    "relevance": 1.0,
+    "additional_value": 0.062,
+    "error_penalty": 0.4,
+    "final": 0.663
+  },
+  "details": {
+    "completeness": {
+      "requirements": [
+        "총 논문 수는 125편이다.",
+        "진단 분야의 논문 비율은 70%이다.",
+        "고장 예지 분야의 논문 비율은 16%이다.",
+        "수명 예지 분야의 논문 비율은 14%이다."
+      ],
+      "covered": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "coverage": 1.0,
+      "score": 1.0
+    },
+    "usefulness": {
+      "score": 0.75
+    },
+    "clarity": {
+      "subscores": {
+        "readability_structure": 0.75,
+        "terminology_correctness": 0.75,
+        "ambiguity_absence": 0.75,
+        "conciseness_balance": 0.75
+      },
+      "score": 0.75
+    },
+    "relevance": {
+      "score": 1.0
+    },
+    "additional_value": {
+      "subscores": {
+        "insight_novelty": 0.25,
+        "examples_illustration": 0.0,
+        "comparisons_tradeoffs": 0.0,
+        "references_pointers": 0.0
+      },
+      "score": 0.062
+    },
+    "error_penalty": {
+      "subscores": {
+        "factual_accuracy": 0.0,
+        "contradiction_to_contexts": 1.0,
+        "unsupported_inference": 1.0,
+        "safety_and_risk": 1.0,
+        "key_claims_presence": 1.0
+      },
+      "score": 0.4
+    }
+  },
+  "explanations": {
+    "completeness": {
+      "metric": "completeness",
+      "summary": "The score of 1.0 was assigned because all requirements were fully covered by the answer.",
+      "score": 1.0,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "All required information was provided accurately.",
+          "evidence": [
+            {
+              "ref": "GT(1)",
+              "quote": "진단 분야가 70%, 고장예지가 16%, 수명예지가 14%로 나타났다.",
+              "interpretation": "This confirms the answer's accuracy in reporting the proportions of each category."
+            },
+            {
+              "ref": "A(1)",
+              "quote": "70%가 진단 분야에 속하고, 고장 예지는 16%, 수명 예지는 14%를 차지하는 것으로 나타났다.",
+              "interpretation": "The answer matches the ground truth, fulfilling all requirements."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If any requirement was missing or inaccurately reported, the score could have been lower.",
+      "confidence": 1.0
+    },
+    "usefulness": {
+      "metric": "usefulness",
+      "summary": "The score of 0.75 reflects that the answer provides relevant information but lacks some detail compared to the ground truth.",
+      "score": 0.75,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "The answer accurately summarizes the classification of papers.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "70%가 진단 분야에 속하고, 고장 예지는 16%, 수명 예지는 14%",
+              "interpretation": "This aligns well with the ground truth, indicating the answer's relevance."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "The answer lacks the explicit mention of the total number of papers analyzed.",
+          "evidence": [
+            {
+              "ref": "GT(1)",
+              "quote": "125편의 논문 중 진단 분야가 70%",
+              "interpretation": "The omission of the total count reduces the completeness of the answer."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If the answer had included the total number of papers, the score could have been higher.",
+      "confidence": 0.9
+    },
+    "clarity": {
+      "metric": "clarity",
+      "summary": "The score of 0.75 reflects a generally clear presentation of information, with minor ambiguities.",
+      "score": 0.75,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "The answer provides a clear breakdown of the paper classifications.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "70%가 진단 분야에 속하고, 고장 예지는 16%, 수명 예지는 14%",
+              "interpretation": "This clear statistical breakdown enhances understanding of the research focus."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "Some terms may not be fully understood without context.",
+          "evidence": [
+            {
+              "ref": "Q(1)",
+              "quote": "인공지능 기반 PHM 기술의 국내 논문 분류 결과",
+              "interpretation": "The term 'PHM' may require prior knowledge for full clarity."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If more context about PHM was provided, clarity could improve.",
+      "confidence": 0.9
+    },
+    "relevance": {
+      "metric": "relevance",
+      "summary": "The answer directly addresses the question by providing specific statistics about domestic papers on AI-based PHM technology.",
+      "score": 1.0,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "The answer provides accurate data matching the question's request.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "70%가 진단 분야에 속하고, 고장 예지는 16%, 수명 예지는 14%",
+              "interpretation": "This data directly answers the question about the classification of domestic papers."
+            },
+            {
+              "ref": "GT(1)",
+              "quote": "진단 분야가 70%, 고장예지가 16%, 수명예지가 14%",
+              "interpretation": "The ground truth confirms the accuracy of the answer's statistics."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If the answer had included incorrect statistics or omitted key details, the score could have been lower.",
+      "confidence": 1.0
+    },
+    "additional_value": {
+      "metric": "additional_value",
+      "summary": "The score reflects a lack of additional insights or comparisons beyond the basic data provided.",
+      "score": 0.062,
+      "drivers": [
+        {
+          "type": "negative",
+          "reason": "No novel insights or comparisons were presented.",
+          "evidence": [
+            {
+              "ref": "GT(1)",
+              "quote": "고장예지가 16%, 수명예지가 14%로 나타났다.",
+              "interpretation": "This is a straightforward presentation of data without additional analysis."
+            },
+            {
+              "ref": "A(1)",
+              "quote": "70%가 진단 분야에 속하고, 고장 예지는 16%, 수명 예지는 14%를 차지하는 것으로 나타났다.",
+              "interpretation": "The answer merely repeats the classification without providing deeper insights."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If the answer had included analysis or implications of the data, the score could have been higher.",
+      "confidence": 1.0
+    },
+    "error_penalty": {
+      "metric": "error_penalty",
+      "summary": "The score reflects significant discrepancies between the answer and the ground truth, leading to factual inaccuracies.",
+      "score": null,
+      "drivers": [
+        {
+          "type": "negative",
+          "reason": "Factual inaccuracies in the answer.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "70%가 진단 분야에 속하고, 고장 예지는 16%, 수명 예지는 14%",
+              "interpretation": "While the answer provides similar statistics, it lacks the precise phrasing and context of the ground truth."
+            },
+            {
+              "ref": "GT(1)",
+              "quote": "진단 분야가 70%, 고장예지가 16%, 수명예지가 14%",
+              "interpretation": "The ground truth presents the information in a more accurate and formal context, which is essential for factual accuracy."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "Contradiction to contexts.",
+          "evidence": [
+            {
+              "ref": "CTX0(6)",
+              "quote": "본 연구에서는 인공지능 기반 PHM 기술의 동향을 파악하기 위해",
+              "interpretation": "The context emphasizes the importance of accurately representing research trends, which the answer fails to do."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If the answer had closely matched the phrasing and context of the ground truth, the score could have been higher.",
+      "confidence": 0.9
+    }
+  },
+  "formula": "final = ((avg(C,U,Cl,R)*(1-0.15) + AV*0.15) * ((1-0.20) + 0.20*EP))",
+  "meta": {
+    "question": "인공지능 기반 PHM 기술의 국내 논문 분류 결과에 대해서 알려줘",
+    "answer": "인공지능 기반 PHM 기술에 대한 국내 논문 125편을 분석한 결과, 70%가 진단 분야에 속하고, 고장 예지는 16%, 수명 예지는 14%를 차지하는 것으로 나타났다.",
+    "ground_truth": "인공지능 기반 PHM 기술은 국내에서 발행된 125편의 논문 중 진단 분야가 70%, 고장예지가 16%, 수명예지가 14%로 나타났다.",
+    "num_contexts": 3,
+    "timestamp": "2025-11-08T15:37:05",
+    "weights": {
+      "weight_additional_value": 0.15,
+      "penalty_softness": 0.2
+    }
+  }
+}

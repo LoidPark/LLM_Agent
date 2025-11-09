@@ -24,7 +24,7 @@ Context:
 \"\"\"{ctx}\"\"\""""
 
 
-def extract_needed_facts(question: str, ground_truth: str) -> List[str]:
+def extract_needed_facts(question: str, ground_truth: str | None = None) -> List[str]:
     msg = [
         {"role": "system", "content": SYS_FACTS},
         {"role": "user", "content": USR_FACTS_TMPL.format(q=question, gt=ground_truth)},

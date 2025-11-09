@@ -1,7 +1,10 @@
 # llm_as_a_judge_explain.py
-# 목적: llm_as_a_judge의 metrics/detail에 대해
-#       "왜 그런 점수가 나왔는지"를 LLM이 증거 기반으로 설명.
-# 의존: llm.py(chat)
+# 목적: LLM-as-a-Judge metrics에 대해
+#       - 왜 이런 점수가 나왔는지
+#       - 어떤 fact들이 커버/누락 되었는지
+#       - 어떻게 개선하면 되는지
+#       - 영어/한국어 설명
+# 을 JSON으로 반환.
 
 from typing import List, Dict, Any, Optional
 import json, re
@@ -20,7 +23,7 @@ def _clamp01(x: float) -> float:
 
 def _safe_json(out: str) -> Dict[str, Any]:
     if not out:
-        return {"ok": False, "error": "empty_output"}
+        return {"ok": False, "error": "empty_output", "raw": out}
     try:
         data = json.loads(out)
         if isinstance(data, dict):
@@ -32,7 +35,6 @@ def _safe_json(out: str) -> Dict[str, Any]:
 
 
 def _sentence_split(text: str) -> List[str]:
-    # 간단/안전한 문장 분할(마침표/물음표/느낌표/개행 기준). 과도한 정교화는 피함.
     if not text:
         return []
     import re
@@ -42,117 +44,175 @@ def _sentence_split(text: str) -> List[str]:
 
 
 def _make_catalog(
-    question: str, answer: str, gt: str, contexts: List[str]
-) -> Dict[str, List[str]]:
-    cat = {
-        "Q": _sentence_split(question),
-        "A": _sentence_split(answer),
-        "GT": _sentence_split(gt),
-        "CTX0": _sentence_split(contexts[0]) if len(contexts) > 0 else [],
-        "CTX1": _sentence_split(contexts[1]) if len(contexts) > 1 else [],
-        "CTX2": _sentence_split(contexts[2]) if len(contexts) > 2 else [],
-        "CTX3": _sentence_split(contexts[3]) if len(contexts) > 3 else [],
-        "CTX4": _sentence_split(contexts[4]) if len(contexts) > 4 else [],
-    }
-    return cat
+    question: str,
+    answer: str,
+    ground_truth: str,
+    contexts: List[str],
+    facts: Optional[List[str]] = None,
+) -> str:
+    lines: List[str] = []
+    # Q / GT / A
+    q_s = _sentence_split(question)
+    gt_s = _sentence_split(ground_truth)
+    a_s = _sentence_split(answer)
 
+    if q_s:
+        lines.append("Q:")
+        for i, s in enumerate(q_s, 1):
+            lines.append(f"  ({i}) {s}")
+    if gt_s:
+        lines.append("GT:")
+        for i, s in enumerate(gt_s, 1):
+            lines.append(f"  ({i}) {s}")
+    if a_s:
+        lines.append("A:")
+        for i, s in enumerate(a_s, 1):
+            lines.append(f"  ({i}) {s}")
 
-def _catalog_to_prompt(cat: Dict[str, List[str]]) -> str:
-    # "문장 번호가 매겨진 인덱스"를 프롬프트로 구성
-    lines = []
-    for section in ["Q", "A", "GT", "CTX0", "CTX1", "CTX2", "CTX3", "CTX4"]:
-        sents = cat.get(section, [])
-        if sents:
-            lines.append(f"{section}:")
-            for i, s in enumerate(sents, 1):
-                lines.append(f"  ({i}) {s}")
+    # FACTS (optional)
+    if facts:
+        lines.append("FACTS (from ground_truth):")
+        for i, f in enumerate(facts, 1):
+            lines.append(f"  [{i}] {f}")
+
+    # CONTEXTS (지금 비교 러너에서는 비어있지만, 일반 RAG 파이프라인에서는 사용 가능)
+    for ci, c in enumerate(contexts):
+        cs = _sentence_split(c)
+        if cs:
+            lines.append(f"CTX{ci}:")
+            for j, s in enumerate(cs, 1):
+                lines.append(f"  ({j}) {s}")
+
     return "\n".join(lines) if lines else "(no text)"
 
 
-# ========= 공통 시스템 프롬프트 =========
-_SYS = """You are an explanation generator for evaluation metrics.
-You must return STRICT JSON with specific fields. Do not include any prose outside JSON.
-When citing evidence, ALWAYS point to specific sentences by section+index, e.g., "A(1)", "CTX2(3)", "GT(2)", "Q(1)".
-Prefer concise quotes (<= 20 words) from those sentences.
-Be honest and precise; if uncertain, say so explicitly in JSON."""
+# ========= 시스템 프롬프트 =========
+_SYS = """You are an evaluation explanation generator for LLM answers.
 
-# ========= 지표별 사용자 프롬프트 =========
-_USR_GENERAL = """We evaluated an answer with multiple metrics. 
-Explain WHY each score was assigned, citing evidence from the indexed sentences.
+You MUST:
+- Return STRICT JSON (no extra text).
+- Explain WHY a metric got its score.
+- Give explanations in BOTH English and Korean.
+- When possible, ground your explanation in:
+  - query (Q)
+  - ground_truth (GT)
+  - facts (FACTS)
+  - answer (A)
+- If facts list is provided, use it for coverage/missing analysis.
+"""
 
-Indexed texts:
+# ========= 사용자 프롬프트(메트릭별) =========
+_USR_GENERAL = """
+We evaluated an answer with multiple metrics.
+Now we focus on ONE metric: "{metric_name}".
+
+Indexed texts and facts:
 {catalog}
 
-Metric details (as provided by the judge):
+Metric detail object:
 {metric_detail_json}
 
+If available, the completeness/error_penalty detail may contain:
+- "requirements": list of fact strings
+- "covered": list of booleans aligned with requirements
+Use that to compute coverage/missing if relevant.
+
 Your task:
-- For the metric "{metric_name}", analyze the provided detail object and the indexed texts.
-- Return JSON with:
+Return STRICT JSON with this structure:
+
 {{
   "metric": "{metric_name}",
-  "summary": "<1-2 sentence summary of why the score was assigned>",
-  "score": <number if present in detail else null>,
+  "score": {score_or_null},
+
+  "summary_en": "<1-2 sentence summary in English>",
+  "summary_ko": "<위 내용을 한국어로 1-2문장 요약>",
+
+  "root_cause": {{
+    "main_factors_en": "<what main factors caused this score (English)>",
+    "main_factors_ko": "<위 내용을 한국어로 설명>",
+    "facts_total": <int or null>,
+    "facts_covered": <int or null>,
+    "facts_missing": [ "<fact1>", "<fact2>" ],
+    "facts_covered_list": [ "<fact1>", "<fact2>" ]
+  }},
+
+  "improvement_en": "<concrete suggestions in English on how to improve the metric>",
+  "improvement_ko": "<위 제안 사항을 한국어로 표현>",
+
   "drivers": [
-     {{
-       "type": "positive" | "negative" | "neutral",
-       "reason": "<short reason>",
-       "evidence": [
-          {{
-            "ref": "A(1)" | "CTX0(2)" | "GT(1)" | "Q(1)" | ...,
-            "quote": "<<=20 words quote from that sentence>",
-            "interpretation": "<why this evidence matters>"
-          }}
-       ]
-     }}
+    {{
+      "type": "positive" | "negative" | "neutral",
+      "reason_en": "<short reason in English>",
+      "reason_ko": "<same reason in Korean>",
+      "evidence": [
+        {{
+          "ref": "Q(1)" | "GT(1)" | "A(1)" | "FACTS[1]" | "CTX0(1)" | ...,
+          "quote": "<<=20 words from that sentence (can be Korean or English)>",
+          "interpretation_en": "<why this evidence matters (English)>",
+          "interpretation_ko": "<왜 이 근거가 중요한지 한국어로 설명>"
+        }}
+      ]
+    }}
   ],
-  "edge_cases": "<optional: where the metric could have differed>",
+
+  "edge_cases": "<optional: when the score could have been higher/lower>",
   "confidence": 0.0-1.0
-}}"""
+}}
+
+Rules:
+- If facts are not relevant for this metric (e.g., clarity), set facts_* fields to null or [].
+- Be concise but specific. Avoid generic comments.
+"""
 
 
-# ========= 마스터 함수: 하나의 metric 설명 =========
 def explain_metric(
-    metric_name: str, detail: Dict[str, Any], catalog: Dict[str, List[str]]
+    metric_name: str,
+    detail: Dict[str, Any],
+    catalog: str,
 ) -> Dict[str, Any]:
-    cat_prompt = _catalog_to_prompt(catalog)
-    detail_json = json.dumps(detail, ensure_ascii=False, indent=2)
+    # 기존 detail 안의 score를 기본값으로 넘김 (없으면 null)
+    base_score = detail.get("score", None)
+    score_literal = "null" if base_score is None else float(base_score)
+
     out = chat(
         [
             {"role": "system", "content": _SYS},
             {
                 "role": "user",
                 "content": _USR_GENERAL.format(
-                    catalog=cat_prompt,
-                    metric_detail_json=detail_json,
+                    catalog=catalog,
+                    metric_detail_json=json.dumps(detail, ensure_ascii=False, indent=2),
                     metric_name=metric_name,
+                    score_or_null=score_literal,
                 ),
             },
         ]
     )
     data = _safe_json(out)
     data["metric"] = data.get("metric", metric_name)
+    # score 필드 정리
+    if "score" in data and data["score"] is not None:
+        data["score"] = float(_clamp01(data["score"]))
+    else:
+        data["score"] = float(_clamp01(base_score if base_score is not None else 0.0))
     return data
 
 
-# ========= 번들 호출: 6개 지표 일괄 설명 =========
 def explain_all(
     judge_details: Dict[str, Any],
     question: str,
     answer: str,
     ground_truth: str,
     contexts: List[str],
+    facts: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
-    judge_details: run_llm_as_a_judge(... )가 반환한 객체의 ["details"]
-    반환: {
-      "explanations": {metric_name: {...json...}},
-      "ok": true
-    }
+    judge_details: run_llm_as_a_judge(...)가 반환한 ["details"]
+    facts: ground_truth에서 추출한 key facts 리스트 (있으면 루트 원인 분석에 활용)
+    반환: {"ok": True, "explanations": {metric_name: {...}}}
     """
-    cat = _make_catalog(question, answer, ground_truth, contexts)
-    exps = {}
-    # metrics 순서는 보기 좋게 고정
+    catalog = _make_catalog(question, answer, ground_truth, contexts, facts)
+    exps: Dict[str, Any] = {}
     order = [
         "completeness",
         "usefulness",
@@ -161,7 +221,9 @@ def explain_all(
         "additional_value",
         "error_penalty",
     ]
+
     for m in order:
         detail = judge_details.get(m, {})
-        exps[m] = explain_metric(m, detail, cat)
+        exps[m] = explain_metric(m, detail, catalog)
+
     return {"ok": True, "explanations": exps}

@@ -50,6 +50,7 @@ def explain_bundle(
         answer=answer,
         ground_truth=ground_truth,
         contexts=contexts,
+        facts=key_claims,
     )
 
     bundle = {

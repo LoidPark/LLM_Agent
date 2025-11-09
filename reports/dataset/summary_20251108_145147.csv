@@ -1,0 +1,2 @@
+﻿question,ground_truth,answer,num_contexts,our_context_precision,our_context_recall,our_faithfulness,our_answer_relevancy,ragas_context_precision,ragas_context_recall,ragas_faithfulness,ragas_answer_relevancy,judge_completeness,judge_usefulness,judge_clarity,judge_relevance,judge_additional_value,judge_error_penalty,judge_final
+고장 예지 및 데이터 처리에 적용되는 기법은 무엇인가?,"SVM, DNN, Autoencoder, DT-CNN 이 있다.","고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",3,0.667,1.0,1.0,1.0,1.0,1.0,0.75,0.712,1.0,0.5,0.57,1.0,0.125,0.4,0.591

@@ -149,6 +149,7 @@ def run_eval(question: str, ground_truth: str, top_k: int = TOP_K):
         row = []
         nf = _norm(f)
         for i, c in enumerate(contexts_texts):
+            print(c)
             hit = nf in _norm(c)
             row.append(f"ctx#{i}:{'Y' if hit else 'N'}")
         print(f" - {f} -> " + ", ".join(row))
@@ -172,7 +173,7 @@ def run_eval(question: str, ground_truth: str, top_k: int = TOP_K):
         return o.startswith("t") and "false" not in o
 
     print("\n=== CLAIM-LEVEL SUPPORT AUDIT ===")
-    claims = ["SVM이 있다.", "DNN이 있다.", "Autoencoder가 있다.", "DT-CNN이 있다."]
+    claims = facts
     for cl in claims:
         print(f" - {cl} -> {_supported(cl)}")
     # ===============================================================
@@ -297,6 +298,35 @@ def run_eval(question: str, ground_truth: str, top_k: int = TOP_K):
             print(f'  - {typ}: {reason} | {ev_ref} :: "{ev_quote}"')
 
     print(f"\n[ saved JSON ] {save_json}")
+
+    return {
+        "question": question,
+        "ground_truth": ground_truth,
+        "answer": answer,
+        "num_contexts": len(contexts_texts),
+        "our_context_precision": round(p, 3),
+        "our_context_recall": round(r, 3),
+        "our_faithfulness": round(faith, 3),
+        "our_answer_relevancy": round(ans_rel, 3),
+        "ragas_context_precision": round(
+            ragas_scores.get("context_precision", float("nan")), 3
+        ),
+        "ragas_context_recall": round(
+            ragas_scores.get("context_recall", float("nan")), 3
+        ),
+        "ragas_faithfulness": round(ragas_scores.get("faithfulness", float("nan")), 3),
+        "ragas_answer_relevancy": round(
+            ragas_scores.get("answer_relevancy", float("nan")), 3
+        ),
+        # LLM-as-a-Judge (6 + final)
+        "judge_completeness": bundle["scores"]["completeness"],
+        "judge_usefulness": bundle["scores"]["usefulness"],
+        "judge_clarity": bundle["scores"]["clarity"],
+        "judge_relevance": bundle["scores"]["relevance"],
+        "judge_additional_value": bundle["scores"]["additional_value"],
+        "judge_error_penalty": bundle["scores"]["error_penalty"],
+        "judge_final": bundle["scores"]["final"],
+    }
 
 
 if __name__ == "__main__":

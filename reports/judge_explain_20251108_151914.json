@@ -1,0 +1,293 @@
+{
+  "scores": {
+    "completeness": 1.0,
+    "usefulness": 0.5,
+    "clarity": 0.57,
+    "relevance": 1.0,
+    "additional_value": 0.062,
+    "error_penalty": 0.4,
+    "final": 0.582
+  },
+  "details": {
+    "completeness": {
+      "requirements": [
+        "고장 예지에 적용되는 기법",
+        "데이터 처리에 적용되는 기법",
+        "SVM",
+        "DNN",
+        "Autoencoder",
+        "DT-CNN"
+      ],
+      "covered": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "coverage": 1.0,
+      "score": 1.0
+    },
+    "usefulness": {
+      "score": 0.5
+    },
+    "clarity": {
+      "subscores": {
+        "readability_structure": 0.5,
+        "terminology_correctness": 0.75,
+        "ambiguity_absence": 0.5,
+        "conciseness_balance": 0.5
+      },
+      "score": 0.57
+    },
+    "relevance": {
+      "score": 1.0
+    },
+    "additional_value": {
+      "subscores": {
+        "insight_novelty": 0.25,
+        "examples_illustration": 0.0,
+        "comparisons_tradeoffs": 0.0,
+        "references_pointers": 0.0
+      },
+      "score": 0.062
+    },
+    "error_penalty": {
+      "subscores": {
+        "factual_accuracy": 0.0,
+        "contradiction_to_contexts": 1.0,
+        "unsupported_inference": 1.0,
+        "safety_and_risk": 1.0,
+        "key_claims_presence": 1.0
+      },
+      "score": 0.4
+    }
+  },
+  "explanations": {
+    "completeness": {
+      "metric": "completeness",
+      "summary": "The score of 1.0 was assigned because all required techniques were mentioned in the answer.",
+      "score": 1.0,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "All required techniques were explicitly listed.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "This sentence confirms that all required techniques are included in the answer."
+            },
+            {
+              "ref": "GT(1)",
+              "quote": "SVM, DNN, Autoencoder, DT-CNN 이 있다.",
+              "interpretation": "The ground truth also lists all required techniques, validating the answer's completeness."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If any required technique was missing from the answer, the score could have been lower.",
+      "confidence": 1.0
+    },
+    "usefulness": {
+      "metric": "usefulness",
+      "summary": "The score of 0.5 reflects that the answer partially aligns with the ground truth but lacks completeness.",
+      "score": 0.5,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "The answer correctly lists applicable techniques.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "This matches the ground truth, indicating some accuracy in the response."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "The answer lacks additional context or explanation.",
+          "evidence": [
+            {
+              "ref": "GT(1)",
+              "quote": "SVM, DNN, Autoencoder, DT-CNN 이 있다.",
+              "interpretation": "While the answer is correct, it does not elaborate on the significance or application of these techniques."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If the answer had included more context or examples, the score could have been higher.",
+      "confidence": 0.8
+    },
+    "clarity": {
+      "metric": "clarity",
+      "summary": "The score reflects a mix of clear terminology and some ambiguity in structure and conciseness.",
+      "score": 0.57,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "Terminology is mostly accurate and relevant.",
+          "evidence": [
+            {
+              "ref": "GT(1)",
+              "quote": "SVM, DNN, Autoencoder, DT-CNN 이 있다.",
+              "interpretation": "The answer correctly lists relevant techniques, enhancing clarity."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "Some ambiguity and lack of conciseness in the answer.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "The phrasing could be more concise to improve clarity."
+            }
+          ]
+        },
+        {
+          "type": "neutral",
+          "reason": "Structure is adequate but could be improved.",
+          "evidence": [
+            {
+              "ref": "CTX0(7)",
+              "quote": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "The structure is clear but repetitive, affecting overall clarity."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If the answer had been more concise, the score could have been higher.",
+      "confidence": 0.8
+    },
+    "relevance": {
+      "metric": "relevance",
+      "summary": "The answer directly matches the ground truth, providing the same techniques for fault prediction and data processing.",
+      "score": 1.0,
+      "drivers": [
+        {
+          "type": "positive",
+          "reason": "Exact match with ground truth.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "This confirms the answer lists the same techniques as the ground truth."
+            },
+            {
+              "ref": "GT(1)",
+              "quote": "SVM, DNN, Autoencoder, DT-CNN 이 있다.",
+              "interpretation": "The ground truth provides the same list of techniques, validating the answer's relevance."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "If the answer had omitted any techniques or included incorrect ones, the score could have been lower.",
+      "confidence": 1.0
+    },
+    "additional_value": {
+      "metric": "additional_value",
+      "summary": "The score reflects a lack of novel insights or illustrative examples in the answer.",
+      "score": 0.062,
+      "drivers": [
+        {
+          "type": "negative",
+          "reason": "No novel insights provided.",
+          "evidence": [
+            {
+              "ref": "A(1)",
+              "quote": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "The answer lists techniques without offering new insights or context."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "Lack of examples or illustrations.",
+          "evidence": [
+            {
+              "ref": "GT(1)",
+              "quote": "SVM, DNN, Autoencoder, DT-CNN 이 있다.",
+              "interpretation": "The ground truth also lacks examples, indicating a missed opportunity for illustration."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "No comparisons or trade-offs discussed.",
+          "evidence": [
+            {
+              "ref": "CTX0(7)",
+              "quote": "고장 예 지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "The answer does not compare the listed techniques, limiting its depth."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "No references or pointers to further information.",
+          "evidence": [
+            {
+              "ref": "CTX0(3)",
+              "quote": "인공지능 기법이 적용된 단계에 따른 분류.",
+              "interpretation": "The answer does not reference any external sources or further reading."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "The score could have been higher if the answer included examples or comparisons.",
+      "confidence": 0.9
+    },
+    "error_penalty": {
+      "metric": "error_penalty",
+      "summary": "The score reflects significant factual inaccuracies and contradictions in the answer compared to the ground truth and context.",
+      "score": 0.4,
+      "drivers": [
+        {
+          "type": "negative",
+          "reason": "Factual inaccuracies in the answer.",
+          "evidence": [
+            {
+              "ref": "GT(1)",
+              "quote": "SVM, DNN, Autoencoder, DT-CNN 이 있다.",
+              "interpretation": "The answer correctly lists techniques but lacks accuracy in context."
+            },
+            {
+              "ref": "A(1)",
+              "quote": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "The answer is factually correct but does not provide additional context or details."
+            }
+          ]
+        },
+        {
+          "type": "negative",
+          "reason": "Contradiction to context.",
+          "evidence": [
+            {
+              "ref": "CTX0(7)",
+              "quote": "고장 예 지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+              "interpretation": "The answer contradicts the context by not elaborating on the application of these techniques."
+            }
+          ]
+        }
+      ],
+      "edge_cases": "The score could have differed if the answer included more context or details about the techniques.",
+      "confidence": 0.8
+    }
+  },
+  "formula": "final = ((avg(C,U,Cl,R)*(1-0.15) + AV*0.15) * ((1-0.20) + 0.20*EP))",
+  "meta": {
+    "question": "고장 예지 및 데이터 처리에 적용되는 기법은 무엇인가?",
+    "answer": "고장 예지 및 데이터 처리에 적용되는 기법은 SVM, DNN, Autoencoder, DT-CNN이 있다.",
+    "ground_truth": "SVM, DNN, Autoencoder, DT-CNN 이 있다.",
+    "num_contexts": 3,
+    "timestamp": "2025-11-08T15:20:16",
+    "weights": {
+      "weight_additional_value": 0.15,
+      "penalty_softness": 0.2
+    }
+  }
+}
